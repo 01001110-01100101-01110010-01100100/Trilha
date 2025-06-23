@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trilha Desafiante</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+	<link rel="icon" href="srt/icon.png" type="image/png">
+    <style>
+        :root {
+            --background-color: #1a1a2e;
+            --container-bg: #16213e;
+            --cell-bg: #0f3460;
+            --cell-hover-bg: #537895;
+            --cell-possible-move-bg: rgba(69, 228, 163, 0.25);
+            --text-light: #e94560;
+            --text-dark: #ffffff;
+            --piece-x-color: #f95959;
+            --piece-o-color: #45e4a3;
+            --button-primary-bg: #e94560;
+            --button-primary-hover: #f33a58;
+            --button-secondary-bg: #6c757d;
+            --button-secondary-hover: #5a6268;
+            --shadow-color: rgba(0, 0, 0, 0.4);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-image: linear-gradient(to top, #1a1a2e, #1f2847);
+            color: var(--text-dark);
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* --- Estrutura Principal --- */
+        .container {
+            position: relative;
+            background-color: var(--container-bg);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px var(--shadow-color);
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+            overflow: hidden;
+        }
+
+        /* --- Menu --- */
+        #menu-content, #difficulty-selection {
+            transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;
+        }
+        #menu-content.slide-left { transform: translateX(-120%); opacity: 0; }
+        #difficulty-selection { position: absolute; top: 40px; left: 40px; right: 40px; transform: translateX(120%); opacity: 0; }
+        #difficulty-selection.slide-in { transform: translateX(0); opacity: 1; }
+
+        h1 { font-size: 3em; color: var(--text-light); margin-bottom: 0; text-shadow: 0 0 10px var(--text-light); }
+        h3 { font-size: 1.1em; color: var(--text-dark); opacity: 0.8; margin-bottom: 30px; }
+        #main-menu p { font-size: 1.1em; opacity: 0.8; margin-top: -5px; margin-bottom: 30px; }
+
+        .menu-button-container { display: flex; flex-direction: column; gap: 15px; }
+        .menu-button { padding: 15px 20px; font-size: 1.2em; font-weight: 600; cursor: pointer; border: none; border-radius: 8px; transition: all 0.2s ease; background-color: var(--button-primary-bg); color: white; }
+        .menu-button:hover { background-color: var(--button-primary-hover); transform: translateY(-3px) scale(1.02); box-shadow: 0 5px 15px rgba(233, 69, 96, 0.4); }
+        .difficulty-button { background-color: var(--cell-bg); }
+        .difficulty-button:hover { background-color: var(--cell-hover-bg); box-shadow: 0 5px 15px rgba(83, 120, 149, 0.4); }
+        #credits-button, #how-to-play-button { background-color: transparent; border: 1px solid var(--button-secondary-bg); font-size: 1em; padding: 10px 15px; }
+        #credits-button:hover, #how-to-play-button:hover { background-color: var(--button-secondary-bg); }
+
+        /* --- Tela do Jogo --- */
+        #game-container { display: none; flex-direction: column; align-items: center; gap: 20px; animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        #game-header { width: 100%; display: flex; justify-content: space-between; align-items: center; }
+        #game-mode-title { font-size: 1.2em; opacity: 0.8; }
+        #message { font-size: 1.5em; font-weight: 600; color: var(--text-light); min-height: 30px; }
+        #tabuleiro { display: grid; grid-template-columns: repeat(3, 100px); grid-template-rows: repeat(3, 100px); gap: 10px; border: 5px solid var(--container-bg); background-color: var(--container-bg); box-shadow: 0 10px 30px var(--shadow-color); border-radius: 10px; padding: 10px; }
+        
+        .casa { width: 100px; height: 100px; background-color: var(--cell-bg); border-radius: 8px; cursor: pointer; transition: background-color 0.2s ease-in-out, box-shadow 0.2s; position: relative; }
+        .casa:hover { background-color: var(--cell-hover-bg); }
+        .casa.selected { background-color: var(--cell-hover-bg); box-shadow: 0 0 15px var(--text-light); }
+        .casa.possible-move { background-color: var(--cell-possible-move-bg); box-shadow: 0 0 15px var(--piece-o-color); }
+        .casa.win-line { animation: win-pulse 1s infinite; }
+        @keyframes win-pulse { 0% { box-shadow: 0 0 20px var(--piece-o-color); } 50% { box-shadow: 0 0 35px var(--piece-x-color); } 100% { box-shadow: 0 0 20px var(--piece-o-color); } }
+
+        .piece { width: 80px; height: 80px; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); cursor: grab; animation: popIn 0.3s ease; }
+        .piece svg { width: 100%; height: 100%; stroke-width: 10; stroke-linecap: round; }
+        .piece.player-X svg { stroke: var(--piece-x-color); }
+        .piece.player-O svg { stroke: var(--piece-o-color); }
+        @keyframes popIn { from { transform: translate(-50%, -50%) scale(0.5); opacity: 0; } to { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+        
+        .game-button { padding: 10px 20px; font-size: 1.1em; font-weight: 600; cursor: pointer; border: none; border-radius: 8px; transition: all 0.2s ease; }
+        #reset-button { background-color: var(--button-primary-bg); color: white; }
+        #reset-button:hover { background-color: var(--button-primary-hover); }
+        #back-to-menu-button { background-color: var(--button-secondary-bg); color: white; }
+        #back-to-menu-button:hover { background-color: var(--button-secondary-hover); }
+
+        /* --- Modals (Créditos e Fim de Jogo) --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); display: none; align-items: center; justify-content: center; z-index: 1000; animation: fadeIn 0.3s; }
+        .modal-content { background-color: var(--container-bg); padding: 30px 40px; border-radius: 15px; box-shadow: 0 10px 40px var(--shadow-color); text-align: left; position: relative; animation: popIn 0.3s; max-width: 80%; }
+        .modal-content h2 { color: var(--text-light); margin-top: 0; text-align: center;}
+        .modal-content p { opacity: 0.9; margin-bottom: 1em; line-height: 1.6;}
+        .modal-content strong { color: var(--piece-o-color); }
+        .modal-close-button { position: absolute; top: 15px; right: 15px; background: none; border: none; color: white; font-size: 1.5em; cursor: pointer; opacity: 0.7; transition: opacity 0.2s; }
+        .modal-close-button:hover { opacity: 1; }
+    </style>
+</head>
+<body>
+    <audio id="sound-click" src="srt/click.mp3" preload="auto"></audio>
+    <audio id="sound-move" src="srt/move.mp3" preload="auto"></audio>
+    <audio id="sound-win" src="srt/win.mp3" preload="auto"></audio>
+
+    <div id="main-menu" class="container">
+        <div id="menu-content">
+            <h1>Trilha</h1>
+            <p>Da minha infância pra sua diversão.</p>
+            <div class="menu-button-container">
+                <button id="pvp-button" class="menu-button">Versus</button>
+                <button id="pvc-button" class="menu-button">Versus CPU</button>
+                <button id="how-to-play-button" class="menu-button">Como Jogar</button>
+                <button id="credits-button" class="menu-button">Créditos</button>
+            </div>
+        </div>
+        <div id="difficulty-selection">
+            <h3>Escolha a Dificuldade</h3>
+            <div class="menu-button-container">
+                <button class="menu-button difficulty-button" data-difficulty="easy">Fácil</button>
+                <button class="menu-button difficulty-button" data-difficulty="medium">Médio</button>
+                <button class="menu-button difficulty-button" data-difficulty="hard">Desafiante</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-container">
+        <div id="game-header">
+             <h2 id="game-mode-title"></h2>
+             <div id="message"></div>
+        </div>
+        <div id="tabuleiro"></div>
+        <div id="game-footer" style="display: flex; gap: 15px; margin-top: 10px;">
+            <button id="reset-button" class="game-button">Reiniciar</button>
+            <button id="back-to-menu-button" class="game-button">Voltar ao Menu</button>
+        </div>
+    </div>
+    
+    <div id="how-to-play-modal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close-button">&times;</button>
+            <h2>Como Jogar</h2>
+            <p><strong>Objetivo:</strong> Ser o primeiro a alinhar suas três peças em uma linha reta (horizontal, vertical ou diagonal) <strong>passando pelo centro</strong>.</p>
+            <p><strong>Início:</strong> Cada jogador começa com 3 peças no tabuleiro, posicionadas nas fileiras superior e inferior.</p>
+            <p><strong>Movimento:</strong> Na sua vez, clique em uma de suas peças para selecioná-la e, em seguida, clique em uma casa vazia adjacente (conectada por uma linha) para movê-la.</p>
+            <p><strong>Vitória:</strong> O primeiro jogador a formar uma 'trilha' com suas três peças passando pelo centro vence a partida. Boa sorte!</p>
+        </div>
+    </div>
+
+    <div id="credits-modal" class="modal-overlay">
+        <div class="modal-content" style="text-align: center;">
+            <button class="modal-close-button">&times;</button>
+            <h2>🎮 Créditos</h2>
+            <p>Este jogo foi criado e desenvolvido por <strong>SrTriste</strong>.</p>
+            <p><em>Junho de 2025</em></p>
+        </div>
+    </div>
+
+    <div id="game-over-modal" class="modal-overlay">
+        <div class="modal-content" style="text-align: center;">
+             <h2 id="game-over-message"></h2>
+             <div class="menu-button-container" style="margin-top: 20px;">
+                 <button id="play-again-button" class="menu-button">Jogar Novamente</button>
+                 <button id="modal-back-to-menu-button" class="menu-button" style="background-color: var(--button-secondary-bg);">Voltar ao Menu</button>
+             </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- CONSTANTES ---
+            const ELEMENTS = {
+                mainMenu: document.getElementById('main-menu'),
+                menuContent: document.getElementById('menu-content'),
+                difficultySelection: document.getElementById('difficulty-selection'),
+                gameContainer: document.getElementById('game-container'),
+                tabuleiro: document.getElementById('tabuleiro'),
+                message: document.getElementById('message'),
+                gameModeTitle: document.getElementById('game-mode-title'),
+                creditsModal: document.getElementById('credits-modal'),
+                gameOverModal: document.getElementById('game-over-modal'),
+                gameOverMessage: document.getElementById('game-over-message'),
+                howToPlayModal: document.getElementById('how-to-play-modal'), 
+            };
+
+            const BUTTONS = {
+                pvp: document.getElementById('pvp-button'),
+                pvc: document.getElementById('pvc-button'),
+                credits: document.getElementById('credits-button'),
+                difficulty: document.querySelectorAll('.difficulty-button'),
+                reset: document.getElementById('reset-button'),
+                backToMenu: document.getElementById('back-to-menu-button'),
+                playAgain: document.getElementById('play-again-button'),
+                modalBackToMenu: document.getElementById('modal-back-to-menu-button'),
+                howToPlay: document.getElementById('how-to-play-button'), 
+            };
+
+            const SOUNDS = {
+                click: document.getElementById('sound-click'),
+                move: document.getElementById('sound-move'),
+                win: document.getElementById('sound-win'),
+            };
+
+            const CONNECTIONS = { 1: [2, 4, 5], 2: [1, 3, 5], 3: [2, 5, 6], 4: [1, 5, 7], 5: [1, 2, 3, 4, 6, 7, 8, 9], 6: [3, 5, 9], 7: [4, 5, 8], 8: [5, 7, 9], 9: [5, 6, 8] };
+            // A LINHA ABAIXO É A CORREÇÃO! Apenas as linhas que passam pelo '5' são consideradas vitórias.
+            const WINNING_LINES = [ [4, 5, 6], [2, 5, 8], [1, 5, 9], [3, 5, 7] ];
+            const PIECE_SVG = { 'X': `<svg viewBox="0 0 100 100"><line x1="10" y1="10" x2="90" y2="90" stroke-width="12" /><line x1="90" y1="10" x2="10" y2="90" stroke-width="12"/></svg>`, 'O': `<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="38" fill="none" stroke-width="12"/></svg>` };
+            
+            let state = {
+                board: Array(9).fill(null),
+                currentPlayer: 'X',
+                selectedPieceIndex: null,
+                gameOver: false,
+                gameMode: 'pvp',
+                difficultyLevel: 'medium',
+                humanPlayer: 'X',
+                aiPlayer: 'O',
+                casas: [],
+            };
+
+            // --- FUNÇÕES DE SETUP E UI ---
+            const playSound = (sound) => { if (sound) { sound.currentTime = 0; sound.play().catch(e => console.error("Erro ao tocar som:", e)); } };
+
+            const setupBoard = () => {
+                ELEMENTS.tabuleiro.innerHTML = '';
+                state.casas = [];
+                for (let i = 0; i < 9; i++) {
+                    const casa = document.createElement('div');
+                    casa.classList.add('casa');
+                    casa.dataset.casa = i;
+                    casa.addEventListener('click', handleCasaClick);
+                    ELEMENTS.tabuleiro.appendChild(casa);
+                    state.casas.push(casa);
+                }
+            };
+
+            const showScreen = (screen) => {
+                ELEMENTS.mainMenu.style.display = 'none';
+                ELEMENTS.gameContainer.style.display = 'none';
+                if (screen === 'menu') ELEMENTS.mainMenu.style.display = 'block';
+                else if (screen === 'game') ELEMENTS.gameContainer.style.display = 'flex';
+            };
+
+            const toggleModal = (modal, show) => {
+                if(modal) modal.style.display = show ? 'flex' : 'none';
+            };
+
+            const backToMenu = () => {
+                toggleModal(ELEMENTS.gameOverModal, false);
+                showScreen('menu');
+                setTimeout(() => {
+                    ELEMENTS.menuContent.classList.remove('slide-left');
+                    ELEMENTS.difficultySelection.classList.remove('slide-in');
+                }, 10);
+            };
+
+            // --- LÓGICA DO JOGO ---
+            const startGame = (mode) => {
+                state.gameMode = mode;
+                if (mode === 'pvp') {
+                    ELEMENTS.gameModeTitle.textContent = "Jogador vs Jogador";
+                    state.humanPlayer = 'X'; 
+                } else {
+                    ELEMENTS.gameModeTitle.textContent = `Você (O) vs PC (X) - ${state.difficultyLevel.charAt(0).toUpperCase() + state.difficultyLevel.slice(1)}`;
+                    state.humanPlayer = 'O';
+                    state.aiPlayer = 'X';
+                }
+                showScreen('game');
+                initializeGame();
+            };
+            
+            const initializeGame = () => {
+                state.board.fill(null);
+                state.gameOver = false;
+                state.selectedPieceIndex = null;
+                toggleModal(ELEMENTS.gameOverModal, false);
+                clearHighlights();
+                state.casas.forEach(c => c.classList.remove('win-line'));
+
+                if (state.gameMode === 'pvc') {
+                    state.board[0] = state.board[1] = state.board[2] = state.aiPlayer;
+                    state.board[6] = state.board[7] = state.board[8] = state.humanPlayer;
+                    state.currentPlayer = state.humanPlayer;
+                } else {
+                    state.board[0] = state.board[1] = state.board[2] = 'X';
+                    state.board[6] = state.board[7] = state.board[8] = 'O';
+                    state.currentPlayer = 'X';
+                }
+                updateMessageState();
+                renderBoard();
+            };
+
+            const renderBoard = () => {
+                state.casas.forEach((casa, index) => {
+                    casa.innerHTML = '';
+                    if (state.board[index]) {
+                        const piece = document.createElement('div');
+                        piece.classList.add('piece', `player-${state.board[index]}`);
+                        piece.innerHTML = PIECE_SVG[state.board[index]];
+                        casa.appendChild(piece);
+                    }
+                });
+            };
+
+            const updateMessageState = () => {
+                if (state.gameOver) return;
+                let msg;
+                if (state.gameMode === 'pvc') {
+                    msg = state.currentPlayer === state.humanPlayer ? 'Sua vez (O)' : 'Vez do Computador (X)';
+                } else {
+                    msg = `Vez do Jogador ${state.currentPlayer}`;
+                }
+                ELEMENTS.message.textContent = msg;
+            };
+            
+            const clearHighlights = () => {
+                state.casas.forEach(c => c.classList.remove('selected', 'possible-move'));
+            };
+
+            const highlightPossibleMoves = () => {
+                if (state.selectedPieceIndex === null) return;
+                const fromPos = state.selectedPieceIndex + 1;
+                CONNECTIONS[fromPos].forEach(toPos => {
+                    const toIndex = toPos - 1;
+                    if (state.board[toIndex] === null) {
+                        state.casas[toIndex].classList.add('possible-move');
+                    }
+                });
+            };
+
+            function handleCasaClick(event) {
+                if (state.gameOver || (state.gameMode === 'pvc' && state.currentPlayer === state.aiPlayer)) return;
+                
+                const clickedIndex = parseInt(event.currentTarget.dataset.casa);
+                
+                if (state.selectedPieceIndex === null) {
+                    if (state.board[clickedIndex] === state.currentPlayer) {
+                        playSound(SOUNDS.click);
+                        state.selectedPieceIndex = clickedIndex;
+                        clearHighlights();
+                        event.currentTarget.classList.add('selected');
+                        highlightPossibleMoves();
+                    }
+                } else {
+                    if (state.selectedPieceIndex === clickedIndex) {
+                        playSound(SOUNDS.click);
+                        state.selectedPieceIndex = null;
+                        clearHighlights();
+                    } else {
+                        const fromPos = state.selectedPieceIndex + 1;
+                        const toPos = clickedIndex + 1;
+                        if (state.board[clickedIndex] === null && CONNECTIONS[fromPos].includes(toPos)) {
+                            executeMove(state.selectedPieceIndex, clickedIndex);
+                        } else {
+                            playSound(SOUNDS.click);
+                            clearHighlights();
+                            state.selectedPieceIndex = null;
+                        }
+                    }
+                }
+            }
+
+            const executeMove = (fromIndex, toIndex) => {
+                playSound(SOUNDS.move);
+                state.board[toIndex] = state.board[fromIndex];
+                state.board[fromIndex] = null;
+                state.selectedPieceIndex = null;
+                clearHighlights();
+                renderBoard();
+
+                const winningLine = checkWin(state.board, state.currentPlayer);
+                if (winningLine) {
+                    playSound(SOUNDS.win);
+                    state.gameOver = true;
+                    let winnerMsg = state.gameMode === 'pvc' 
+                        ? (state.currentPlayer === state.humanPlayer ? 'Parabéns! Você venceu!' : 'O Computador venceu!')
+                        : `Jogador ${state.currentPlayer} venceu!`;
+                    winningLine.forEach(pos => state.casas[pos - 1].classList.add('win-line'));
+                    ELEMENTS.message.textContent = winnerMsg;
+                    setTimeout(() => showGameOver(winnerMsg), 1500);
+                    return;
+                }
+                switchPlayer();
+            };
+            
+            const showGameOver = (message) => {
+                ELEMENTS.gameOverMessage.textContent = message;
+                toggleModal(ELEMENTS.gameOverModal, true);
+            };
+
+            const switchPlayer = () => {
+                state.currentPlayer = (state.currentPlayer === 'X') ? 'O' : 'X';
+                updateMessageState();
+                
+                if (state.gameMode === 'pvc' && state.currentPlayer === state.aiPlayer && !state.gameOver) {
+                    ELEMENTS.tabuleiro.style.pointerEvents = 'none';
+                    setTimeout(() => { 
+                        aiMove(); 
+                        ELEMENTS.tabuleiro.style.pointerEvents = 'auto'; 
+                    }, 800);
+                }
+            };
+
+            const checkWin = (board, player) => {
+                for (const line of WINNING_LINES) {
+                    if (line.every(pos => board[pos - 1] === player)) {
+                        return line;
+                    }
+                }
+                return null;
+            };
+
+            // --- INTELIGÊNCIA ARTIFICIAL ---
+            const aiMove = () => {
+                if (state.gameOver) return;
+                let move;
+                switch(state.difficultyLevel) {
+                    case 'easy':   move = aiMoveEasy();   break;
+                    case 'medium': move = aiMoveMedium(); break;
+                    case 'hard':   move = aiMoveHard();   break;
+                }
+                if (move) executeMove(move.from, move.to);
+            };
+
+            const getAllPossibleMoves = (player, board) => {
+                const moves = [];
+                for (let i = 0; i < 9; i++) {
+                    if (board[i] === player) {
+                        for (const toPos of CONNECTIONS[i + 1]) {
+                            if (board[toPos - 1] === null) moves.push({ from: i, to: toPos - 1 });
+                        }
+                    }
+                }
+                return moves;
+            };
+
+            const aiMoveEasy = () => {
+                const possibleMoves = getAllPossibleMoves(state.aiPlayer, state.board);
+                return possibleMoves.length > 0 ? possibleMoves[Math.floor(Math.random() * possibleMoves.length)] : null;
+            };
+
+            const findWinningMove = (player, board) => {
+                const moves = getAllPossibleMoves(player, board);
+                for (const move of moves) {
+                   let tempBoard = [...board];
+                   tempBoard[move.to] = player;
+                   tempBoard[move.from] = null;
+                   if (checkWin(tempBoard, player)) return move;
+               }
+               return null;
+            };
+
+            const aiMoveMedium = () => {
+                const winningMove = findWinningMove(state.aiPlayer, state.board);
+                if (winningMove) return winningMove;
+                const blockingMove = findWinningMove(state.humanPlayer, state.board);
+                if (blockingMove) return blockingMove;
+                return aiMoveEasy();
+            };
+            
+            const aiMoveHard = () => {
+                let bestScore = -Infinity;
+                let bestMove = null;
+                const possibleMoves = getAllPossibleMoves(state.aiPlayer, state.board);
+
+                for (const move of possibleMoves) {
+                    let tempBoard = [...state.board];
+                    tempBoard[move.to] = state.aiPlayer;
+                    tempBoard[move.from] = null;
+                    let score = minimax(tempBoard, 4, -Infinity, Infinity, false); 
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestMove = move;
+                    }
+                }
+                return bestMove || aiMoveEasy();
+            };
+
+            const countThreats = (board, player) => {
+                let threatCount = 0;
+                for (const line of WINNING_LINES) {
+                    const values = line.map(pos => board[pos - 1]);
+                    const playerCount = values.filter(v => v === player).length;
+                    const nullCount = values.filter(v => v === null).length;
+                    if (playerCount === 2 && nullCount === 1) threatCount++;
+                }
+                return threatCount;
+            };
+
+            const evaluateBoard = (board) => {
+                if (checkWin(board, state.aiPlayer)) return 1000;
+                if (checkWin(board, state.humanPlayer)) return -1000;
+                let score = 0;
+                score += countThreats(board, state.aiPlayer) * 10;
+                score -= countThreats(board, state.humanPlayer) * 10;
+                if (board[4] === state.aiPlayer) score += 5;
+                if (board[4] === state.humanPlayer) score -= 5;
+                return score;
+            };
+
+            const minimax = (board, depth, alpha, beta, isMaximizing) => {
+                const score = evaluateBoard(board);
+                if (score === 1000 || score === -1000 || depth === 0) {
+                    return score - depth;
+                }
+
+                const player = isMaximizing ? state.aiPlayer : state.humanPlayer;
+                const moves = getAllPossibleMoves(player, board);
+                
+                if (isMaximizing) {
+                    let best = -Infinity;
+                    for (const move of moves) {
+                        let childBoard = [...board];
+                        childBoard[move.to] = player;
+                        childBoard[move.from] = null;
+                        best = Math.max(best, minimax(childBoard, depth - 1, alpha, beta, false));
+                        alpha = Math.max(alpha, best);
+                        if (beta <= alpha) break;
+                    }
+                    return best;
+                } else {
+                    let best = Infinity;
+                    for (const move of moves) {
+                        let childBoard = [...board];
+                        childBoard[move.to] = player;
+                        childBoard[move.from] = null;
+                        best = Math.min(best, minimax(childBoard, depth - 1, alpha, beta, true));
+                        beta = Math.min(beta, best);
+                        if (beta <= alpha) break;
+                    }
+                    return best;
+                }
+            };
+            
+            // --- EVENT LISTENERS ---
+            BUTTONS.pvp.addEventListener('click', () => { playSound(SOUNDS.click); startGame('pvp'); });
+            BUTTONS.pvc.addEventListener('click', () => { playSound(SOUNDS.click); ELEMENTS.menuContent.classList.add('slide-left'); ELEMENTS.difficultySelection.classList.add('slide-in'); });
+            BUTTONS.difficulty.forEach(button => button.addEventListener('click', () => { playSound(SOUNDS.click); state.difficultyLevel = button.dataset.difficulty; startGame('pvc'); }));
+            BUTTONS.backToMenu.addEventListener('click', () => { playSound(SOUNDS.click); backToMenu(); });
+            BUTTONS.modalBackToMenu.addEventListener('click', () => { playSound(SOUNDS.click); backToMenu(); });
+            BUTTONS.reset.addEventListener('click', () => { playSound(SOUNDS.click); initializeGame(); });
+            BUTTONS.playAgain.addEventListener('click', () => { playSound(SOUNDS.click); initializeGame(); });
+            
+            BUTTONS.credits.addEventListener('click', () => { playSound(SOUNDS.click); toggleModal(ELEMENTS.creditsModal, true); });
+            BUTTONS.howToPlay.addEventListener('click', () => { playSound(SOUNDS.click); toggleModal(ELEMENTS.howToPlayModal, true); });
+
+            document.querySelectorAll('.modal-overlay').forEach(modal => {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        playSound(SOUNDS.click);
+                        toggleModal(modal, false);
+                    }
+                });
+            });
+            document.querySelectorAll('.modal-close-button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    playSound(SOUNDS.click);
+                    toggleModal(btn.closest('.modal-overlay'), false);
+                });
+            });
+
+            // --- INICIALIZAÇÃO ---
+            setupBoard();
+        });
+    </script>
+</body>
+</html>
