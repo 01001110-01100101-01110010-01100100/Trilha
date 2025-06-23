@@ -1,11 +1,3 @@
-Com certeza\! Entendi perfeitamente. É muito comum termos jogos da nossa infância que não sabemos o nome "oficial" ou que simplesmente desenhávamos para jogar. Essa é a beleza dos jogos populares\!
-
-Vou ajustar o `README.md` para refletir essa nostalgia e incluir uma seção clara de "Como Baixar e Jogar", explicando a estrutura de pastas que você mencionou.
-
-Aqui está a nova versão do `README.md`:
-
------
-
 # Trilha Desafiante
 
 Um jogo clássico da infância, muitas vezes riscado no chão ou em um pedaço de papel, agora em uma versão digital. O nome "Trilha" é uma das muitas formas como este jogo pode ser conhecido, mas a diversão e o desafio são universais.
