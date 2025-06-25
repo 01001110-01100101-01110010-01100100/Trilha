@@ -1,58 +1,80 @@
-# Trilha Desafiante
+🎲 Trilha Desafiante
+Um clássico da minha infância — conhecido por muitos nomes e jogado em folhas de caderno ou riscado no chão — agora em uma versão digital acessível direto do navegador.
 
-Um jogo clássico da infância, muitas vezes riscado no chão ou em um pedaço de papel, agora em uma versão digital. O nome "Trilha" é uma das muitas formas como este jogo pode ser conhecido, mas a diversão e o desafio são universais.
+🌐 Jogar Agora
+Sem instalar nada. Basta clicar e começar!
 
-Este projeto recria essa experiência nostálgica para o navegador, implementando uma Inteligência Artificial com diferentes níveis de dificuldade para testar sua estratégia. Foi desenvolvido com HTML, CSS e JavaScript puro, sem a necessidade de bibliotecas ou frameworks.
+💡 Sobre o Jogo
+"Trilha" é um jogo de estratégia onde o objetivo é alinhar suas três peças em linha reta passando pelo centro do tabuleiro. Esta versão recria com carinho uma lembrança da infância usando HTML, CSS e JavaScript puro — sem bibliotecas ou frameworks — com direito a Inteligência Artificial em vários níveis de dificuldade.
 
-## 📥 Como Baixar e Jogar
+📥 Como Baixar e Jogar Localmente
+Se quiser guardar e jogar offline:
 
-Para jogar, não é preciso instalar nada, apenas seguir os passos abaixo:
+Baixe os arquivos: Faça o download completo do projeto (.zip).
 
-1.  **Baixe os arquivos:** Faça o download de todos os arquivos do projeto (geralmente como um arquivo `.zip`).
-2.  **Extraia os arquivos:** Descompacte o arquivo baixado em uma pasta no seu computador.
-3.  **Mantenha a estrutura:** É muito importante que a estrutura das pastas seja mantida como a original para que o jogo encontre os sons e as imagens. A pasta deve ficar assim:
-    ```
-    Sua-Pasta/
-    │
-    ├── index.html         (O jogo principal)
-    ├── README.md          (Este arquivo de instruções)
-    ├── LICENCA            (O arquivo de licença)
-    │
-    └─── srt/               (Pasta com mídias)
-         ├── click.mp3
-         ├── move.mp3
-         ├── win.mp3
-         └── icon.png
-    ```
-4.  **Abra no Navegador:** Dê um duplo clique no arquivo `index.html`. Ele será aberto no seu navegador de internet padrão (como Google Chrome, Firefox, etc.) e o jogo começará.
+Extraia os arquivos: Descompacte em uma pasta no seu computador.
 
-## 🎮 Como Jogar
+Mantenha a estrutura: Deixe os arquivos organizados assim:
 
-**Objetivo:** Ser o primeiro a alinhar suas três peças em uma linha reta (horizontal, vertical ou diagonal) **passando pelo centro** do tabuleiro.
+arduino
+Copiar
+Editar
+Trilha/
+├── index.html         (Jogo principal)
+├── README.md          (Instruções)
+├── LICENCA            (Licença)
+└── srt/               (Mídias)
+    ├── click.mp3
+    ├── move.mp3
+    ├── win.mp3
+    └── icon.png
+Abra no navegador: Clique duas vezes no index.html e jogue direto do seu navegador favorito.
 
-  * **Início:** Cada jogador começa com 3 peças, posicionadas nas fileiras superior e inferior.
-  * **Movimento:** Na sua vez, clique em uma de suas peças para selecioná-la e, em seguida, clique em uma casa vazia adjacente para movê-la.
-  * **Vitória:** O primeiro jogador a formar uma 'trilha' com suas três peças passando pelo centro vence a partida.
+🎮 Como Jogar
+Objetivo: Alinhar suas 3 peças em linha reta passando pelo centro do tabuleiro.
 
-## ✨ Funcionalidades
+Como jogar:
 
-  * **Modos de Jogo:**
-      * **Versus:** Jogue com um amigo no mesmo computador.
-      * **Versus CPU:** Desafie a inteligência artificial.
-  * **Níveis de Dificuldade da CPU:**
-      * **Fácil:** A CPU faz movimentos aleatórios.
-      * **Médio:** A CPU consegue bloquear jogadas de vitória e realizar as suas próprias.
-      * **Desafiante:** A CPU usa o algoritmo Minimax para calcular o melhor movimento, tornando o desafio muito maior.
-  * **Interface Moderna:** Design limpo com animações e efeitos sonoros para uma experiência imersiva.
-  * **Guias Rápidos:** Modais de "Como Jogar" e "Créditos" acessíveis pelo menu.
+Cada jogador começa com 3 peças em lados opostos.
 
-## 🛠️ Tecnologias Utilizadas
+Clique em uma peça sua, depois em uma casa adjacente vazia para mover.
 
-  * **HTML5:** Estrutura do jogo.
-  * **CSS3:** Estilização e animações.
-  * **JavaScript (ES6+):** Toda a lógica do jogo e a inteligência artificial.
+Vitória: Conquiste o centro e alinhe suas peças — simples e genial!
 
-## ✍️ Créditos
+✨ Funcionalidades
+Modos de Jogo:
 
-  * Este jogo foi criado e desenvolvido por **SrTriste**.
-  * Data de desenvolvimento: Junho de 2025.
+Versus Jogador: Dois jogadores no mesmo PC.
+
+Versus CPU: Desafie a IA.
+
+Dificuldades:
+
+Fácil: IA aleatória
+
+Médio: IA que bloqueia e joga ofensivamente
+
+Desafiante: IA com algoritmo Minimax
+
+Extras:
+
+Interface moderna, com sons e animações
+
+Guias rápidos de regras e créditos pelo menu
+
+🛠️ Tecnologias Utilizadas
+HTML5 – Estrutura do jogo
+
+CSS3 – Visual e animações
+
+JavaScript (ES6+) – Lógica de jogo e inteligência artificial
+
+✍️ Créditos
+Criado com carinho por SrTriste
+
+Inspirado na minha infância, para a sua diversão
+
+Projeto iniciado em Junho de 2025
+
+Disponível online:
+👉 https://01001110-01100101-01110010-01100100.github.io/Trilha/
